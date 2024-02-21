@@ -8,16 +8,20 @@ class CheckFile {
         String directoryPath = "C:/karan/just/Gdrive_project/TRANSFER/";
         File directory = new File(directoryPath);
 
-        if (!directory.exists()) {
-            System.out.println("Directory not found: " + directoryPath);
-        } else {
-            File[] filesList = directory.listFiles();
-            if (filesList != null && filesList.length != 0) {
-                System.out.println("Total "+filesList.length+" File(s) available to transfer.");
-                listFilesToTransfer(filesList);
+        try {
+            if (!directory.exists()) {
+                System.out.println("Directory not found: " + directoryPath);
+            } else {
+                File[] filesList = directory.listFiles();
+                if (filesList != null && filesList.length != 0) {
+                    System.out.println("Total " + filesList.length + " File(s) available to transfer.");
+                    listFilesToTransfer(filesList);
+                } else
+                    System.out.println("No Files available to transfer.");
             }
-            else
-                System.out.println("No Files available to transfer.");
+        }
+        catch (Exception e){
+            System.out.println("Something went wrong.");
         }
     }
 
