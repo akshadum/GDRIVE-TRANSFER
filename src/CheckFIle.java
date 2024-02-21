@@ -22,6 +22,7 @@ class CheckFile {
         }
         catch (Exception e){
             System.out.println("Something went wrong.");
+            throw new IOException(e.getMessage());
         }
     }
 
