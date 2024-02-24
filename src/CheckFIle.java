@@ -2,7 +2,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 class CheckFile {
     private static final String INSERT_INTO_DB = "INSERT INTO AUDIT (NAME, EXTENSION, SIZE, TRANSFER_DTM) VALUES (?,?,?,?);";
@@ -45,17 +44,22 @@ class CheckFile {
             for (File files : filesList) {
                 if (getExtension(files.getName()) != null) {
                     double fileSizeInKB = Math.round(((double) files.length() / 1024) * 100.0) / 100.0;
-                    String formattedDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
                     ps.setString(1, files.getName());
                     ps.setString(2, getExtension(files.getName()));
                     ps.setDouble(3, fileSizeInKB);
-                    ps.setTimestamp(4, Timestamp.valueOf(formattedDateTime));
-                    System.out.println(files.getName() + " " + getExtension(files.getName()) + " " + fileSizeInKB + " " + formattedDateTime);
+                    ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+                    ps.executeUpdate();
+                    System.out.println(files.getName() + " " + getExtension(files.getName()) + " " + fileSizeInKB + " " + Timestamp.valueOf(LocalDateTime.now()));
                 }
             }
         } finally {
             con.close();
-            ps.close();
+            try {
+                if (ps != null)
+                    ps.close();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
         }
     }
 
