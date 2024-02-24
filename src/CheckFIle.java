@@ -1,10 +1,12 @@
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.sql.*;
 
 class CheckFile {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
+        Connection con = null;
+        con=connectDb();
         String directoryPath = "C:/karan/just/Gdrive_project/TRANSFER/";
         File directory = new File(directoryPath);
 
@@ -21,9 +23,15 @@ class CheckFile {
             }
         }
         catch (Exception e){
-            System.out.println("Something went wrong.");
-            throw new IOException(e.getMessage());
+            System.out.println("Something went wrong. "+e.getStackTrace());
         }
+    }
+
+    private static Connection connectDb() throws SQLException {
+        String url="jdbc:mysql://localhost:3306/";
+        String username="gdrive";
+        String password="practice";
+        return DriverManager.getConnection(url, username, password);
     }
 
     private static void listFilesToTransfer(File[] filesList) {
