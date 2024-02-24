@@ -1,10 +1,11 @@
-import javax.swing.*;
 import java.io.File;
+import java.io.IOException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.sql.*;
 
 class CheckFile {
+    private static final String INSERT_INTO_DB = "INSERT INTO AUDIT (NAME, EXTENSION, SIZE, TRANSFER_DTM) VALUES (?,?,?,?);";
     public static void main(String[] args) throws Exception {
 
         String directoryPath = "C:/karan/just/Gdrive_project/TRANSFER/";
@@ -21,8 +22,9 @@ class CheckFile {
                 } else
                     System.out.println("No Files available to transfer.");
             }
-        } catch (Exception e){
-            System.out.println("Something went wrong. " + e.getStackTrace());
+        } catch (Exception e) {
+            System.out.println("Something went wrong. ");
+            throw new IOException(e);
         }
     }
 
@@ -34,19 +36,26 @@ class CheckFile {
     }
 
     private static void listFilesToTransfer(File[] filesList) throws SQLException {
-        Connection con = null;
+        Connection con;
+        PreparedStatement ps = null;
         con = connectDb();
-        String sql = "CREATE DATABASE db";
-        Statement statement = con.createStatement();
-        statement.executeUpdate(sql);
-        statement.close();
-        JOptionPane.showMessageDialog(null, "db" + " Database has been created successfully", "System Message", JOptionPane.INFORMATION_MESSAGE);
-        for (File files : filesList) {
-            if (getExtension(files.getName()) != null) {
-                double fileSizeInKB = Math.round(((double) files.length() / 1024) * 100.0) / 100.0;
-                String formattedDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
-                System.out.println(files.getName() + " " + getExtension(files.getName()) + " " + fileSizeInKB + " " + formattedDateTime);
+        System.out.println("Connection Success");
+        try {
+            ps = con.prepareStatement(INSERT_INTO_DB);
+            for (File files : filesList) {
+                if (getExtension(files.getName()) != null) {
+                    double fileSizeInKB = Math.round(((double) files.length() / 1024) * 100.0) / 100.0;
+                    String formattedDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+                    ps.setString(1, files.getName());
+                    ps.setString(2, getExtension(files.getName()));
+                    ps.setDouble(3, fileSizeInKB);
+                    ps.setTimestamp(4, Timestamp.valueOf(formattedDateTime));
+                    System.out.println(files.getName() + " " + getExtension(files.getName()) + " " + fileSizeInKB + " " + formattedDateTime);
+                }
             }
+        } finally {
+            con.close();
+            ps.close();
         }
     }
 

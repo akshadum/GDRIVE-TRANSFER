@@ -3,29 +3,45 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class DbConfig {
-    private static final String PROPERTIES_FILE = "db.properties";
-    private static Properties properties = new Properties();
+    private static final String PROPERTIES_FILE = "config.properties";
+    private static final Properties properties = loadProperties();
 
-    DbConfig() {
-        try (InputStream input = DbConfig.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
-            if (input == null) {
-                System.out.println("Sorry, unable to find " + PROPERTIES_FILE);
+    private static Properties loadProperties() {
+        try (InputStream configFileReader = DbConfig.class.getClassLoader().getResourceAsStream(PROPERTIES_FILE)) {
+            if (configFileReader == null) {
+                throw new RuntimeException("config.properties not found on the classpath");
             }
-            properties.load(input);
-        } catch (IOException ex) {
-            ex.printStackTrace();
+
+            Properties loadedProperties = new Properties();
+            loadedProperties.load(configFileReader);
+
+            // Debug: Print loaded properties
+            System.out.println("Loaded properties:");
+            loadedProperties.forEach((key, value) -> System.out.println(key + ": " + value));
+
+            return loadedProperties;
+        } catch (IOException e) {
+            throw new RuntimeException("Error loading properties: " + e.getMessage(), e);
         }
     }
 
     public static String getDbUrl() {
-        return properties.getProperty("db.url");
+        return getProperty("db.url", "Database URL");
     }
 
     public static String getDbUsername() {
-        return properties.getProperty("db.username");
+        return getProperty("db.username", "Database username");
     }
 
     public static String getDbPassword() {
-        return properties.getProperty("db.password");
+        return getProperty("db.password", "Database password");
+    }
+
+    private static String getProperty(String key, String propertyName) {
+        String propertyValue = properties.getProperty(key);
+        if (propertyValue == null) {
+            throw new RuntimeException(propertyName + " is missing in " + PROPERTIES_FILE);
+        }
+        return propertyValue;
     }
 }
